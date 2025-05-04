@@ -5,6 +5,7 @@ import { foodSpotRouter } from "../modules/foodspot/foodspot.router";
 import { CategoryRouter } from "../modules/category/category.router";
 import { voteRouter } from "../modules/votes/votes.router";
 import { CommentRouter } from "../modules/comments/comments.router";
+import { ratingRouter } from "../modules/rating/rating.router";
 
 const router = express.Router();
 
@@ -32,6 +33,10 @@ const moduleRouter = [
   {
     path: "/comment",
     route: CommentRouter,
+  },
+  {
+    path: "/review",
+    route: ratingRouter,
   },
 ];
 

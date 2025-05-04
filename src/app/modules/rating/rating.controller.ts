@@ -1,37 +1,58 @@
-// import { Request, Response } from "express";
-// import CatchAsync from "../../../shared/CatchAsync";
-// import SendResponse from "../../../shared/SendResponse";
-// import httpStatus from "http-status";
-// import { foodSpotService } from "./foodspot.service";
+import { Request, Response } from "express";
+import CatchAsync from "../../../shared/CatchAsync";
+import SendResponse from "../../../shared/SendResponse";
+import httpStatus from "http-status";
+import { ratingService } from "./rating.service";
 
-// const createFoodSpot = CatchAsync(async (req: Request, res: Response) => {
-//   const payload = {
-//     data: req.body,
-//     file: req.file,
-//   };
+const createRating = CatchAsync(async (req: Request, res: Response) => {
+  const result = await ratingService.ratingAddIntoDb(req.body);
 
-//   const result = await foodSpotService.foodSpotAddIntoDb(payload);
+  SendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Rating add successfully",
+    data: result,
+  });
+});
 
-//   SendResponse(res, {
-//     statusCode: httpStatus.OK,
-//     success: true,
-//     message: "FoodSpot Created successfully",
-//     data: result,
-//   });
-// });
+const getAllRating = CatchAsync(async (req: Request, res: Response) => {
+  const result = await ratingService.getAllRatingIntoDb();
 
-// const getAllFoodSpot = CatchAsync(async (req: Request, res: Response) => {
-//   const result = await foodSpotService.getAllFoodIntoDb();
+  SendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Rating Fetched successfully",
+    data: result,
+  });
+});
 
-//   SendResponse(res, {
-//     statusCode: httpStatus.OK,
-//     success: true,
-//     message: "FoodSpot Fetched successfully",
-//     data: result,
-//   });
-// });
+const updateRating = CatchAsync(async (req: Request, res: Response) => {
+  const id = req.params.id;
 
-// export const foodSpotController = {
-//   createFoodSpot,
-//   getAllFoodSpot,
-// };
+  const result = await ratingService.updateRatingIntoDb(id, req.body);
+
+  SendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Rating updated successfully",
+    data: result,
+  });
+});
+
+const deleteRating = CatchAsync(async (req: Request, res: Response) => {
+  const result = await ratingService.ratingAddIntoDb(req.params.id);
+
+  SendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Rating deleted successfully",
+    data: result,
+  });
+});
+
+export const ratingController = {
+  createRating,
+  getAllRating,
+  updateRating,
+  deleteRating,
+};
