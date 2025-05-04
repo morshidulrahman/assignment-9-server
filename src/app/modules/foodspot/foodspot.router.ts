@@ -15,5 +15,6 @@ router.post(
 );
 
 router.get("/", foodSpotController.getAllFoodSpot);
+router.get("/update/:id", foodSpotController.foodSpotUpdate);
 
 export const foodSpotRouter = router;

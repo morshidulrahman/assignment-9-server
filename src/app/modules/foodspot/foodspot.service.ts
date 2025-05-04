@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { Prisma, PrismaClient } from "@prisma/client";
 import { fileUploader } from "../../../helpers/fileUploader";
 
 const prisma = new PrismaClient();
@@ -44,30 +44,72 @@ const foodSpotAddIntoDb = async (payload: any) => {
   return result;
 };
 
-const getAllFoodIntoDb = async () => {
+const getAllFoodIntoDb = async (data: any) => {
+  const {
+    searchTerm,
+    categoryName,
+    priceMin,
+    priceMax,
+    categories,
+    sortByPopularity,
+  } = data;
+
+  const where: any = {};
+
+  // Search by title or category name
+  if (searchTerm) {
+    where.OR = [
+      { title: { contains: searchTerm, mode: "insensitive" } },
+      { category: { name: { contains: searchTerm, mode: "insensitive" } } },
+    ];
+  }
+
+  if (categoryName) {
+    where.category = { name: { equals: categoryName, mode: "insensitive" } };
+  }
+
+  if (categories && Array.isArray(categories) && categories.length > 0) {
+    where.category = { name: { in: categories } };
+  }
+
+  if (priceMin !== undefined || priceMax !== undefined) {
+    where.priceRange = {};
+    if (priceMin !== undefined) where.priceRange.gte = priceMin;
+    if (priceMax !== undefined) where.priceRange.lte = priceMax;
+  }
+
   const result = await prisma.foodPost.findMany({
-    include: {
+    where,
+    select: {
+      id: true,
+      title: true,
+      description: true,
+      priceRange: true,
       votes: true,
+      comments: { select: { content: true } },
+      category: { select: { name: true } },
+      ratings: { select: { value: true } },
     },
   });
 
-  // Map through each post and count upvotes and downvotes
-  const postsWithVoteCounts = result.map((post) => {
-    const upvotes = post.votes.filter((vote) => vote.type === "UPVOTE").length;
-    const downvotes = post.votes.filter(
+  let postsWithVoteCounts = result.map((post) => {
+    const upVotes = post.votes.filter((vote) => vote.type === "UPVOTE").length;
+    const downVotes = post.votes.filter(
       (vote) => vote.type === "DOWNVOTE"
     ).length;
-    return {
-      ...post,
-      upvotes,
-      downvotes,
-    };
+    return { ...post, upVotes, downVotes };
   });
+
+  if (sortByPopularity) {
+    postsWithVoteCounts = postsWithVoteCounts.sort(
+      (a, b) => b.upVotes - a.upVotes
+    );
+  }
 
   return postsWithVoteCounts;
 };
 
-const foodStatusUpdate = async (id: string, payload: any) => {
+const foodSpotUpdate = async (id: string, payload: any) => {
   const isExists = await prisma.foodPost.findFirst({
     where: {
       id: id,
@@ -76,13 +118,14 @@ const foodStatusUpdate = async (id: string, payload: any) => {
   if (!isExists) {
     throw new Error("Food not found");
   }
-  const updateData = payload.status ? { status: payload.status } : {};
 
   const result = await prisma.foodPost.update({
     where: {
       id: id,
     },
-    data: updateData,
+    data: {
+      ...payload,
+    },
   });
 
   return result;
@@ -91,5 +134,5 @@ const foodStatusUpdate = async (id: string, payload: any) => {
 export const foodSpotService = {
   foodSpotAddIntoDb,
   getAllFoodIntoDb,
-  foodStatusUpdate,
+  foodSpotUpdate,
 };

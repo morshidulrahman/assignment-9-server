@@ -11,6 +11,16 @@ const commentAddIntoDb = async (payload: any) => {
   return result;
 };
 
+const commentDeleteIntoDb = async (id: string) => {
+  const result = await prisma.comment.delete({
+    where: {
+      id: id,
+    },
+  });
+  return result;
+};
+
 export const CommentService = {
   commentAddIntoDb,
+  commentDeleteIntoDb,
 };

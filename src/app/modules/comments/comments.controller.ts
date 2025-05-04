@@ -15,6 +15,18 @@ const createComment = CatchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const deleteComment = CatchAsync(async (req: Request, res: Response) => {
+  const result = await CommentService.commentDeleteIntoDb(req.params.id);
+
+  SendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "delete Comment successfully",
+    data: result,
+  });
+});
+
 export const commentController = {
   createComment,
+  deleteComment,
 };
